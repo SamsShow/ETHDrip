@@ -19,19 +19,26 @@ struct MainTabView: View {
                 }
                 .tag(0)
             
+            // Leaderboard Tab
+            StandaloneLeaderboardView()
+                .tabItem {
+                    Label("Leaderboard", systemImage: selectedTab == 1 ? "trophy.fill" : "trophy")
+                }
+                .tag(1)
+            
             // NFC Scan Tab
             NFCView()
                 .tabItem {
-                    Label("Scan", systemImage: selectedTab == 1 ? "wave.3.right.circle.fill" : "wave.3.right.circle")
+                    Label("Scan", systemImage: selectedTab == 2 ? "wave.3.right.circle.fill" : "wave.3.right.circle")
                 }
-                .tag(1)
+                .tag(2)
             
             // Profile Tab
             ProfileView()
                 .tabItem {
-                    Label("Profile", systemImage: selectedTab == 2 ? "person.circle.fill" : "person.circle")
+                    Label("Profile", systemImage: selectedTab == 3 ? "person.circle.fill" : "person.circle")
                 }
-                .tag(2)
+                .tag(3)
         }
         .accentColor(AppColors.primaryPurple)
     }
