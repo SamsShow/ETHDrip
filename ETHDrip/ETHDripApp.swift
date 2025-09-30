@@ -9,9 +9,20 @@ import SwiftUI
 
 @main
 struct ETHDripApp: App {
+    @StateObject private var authViewModel = AuthViewModel()
+    
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            Group {
+                switch authViewModel.authState {
+                case .authenticated:
+                    ContentView()
+                        .environmentObject(authViewModel)
+                case .unauthenticated, .loading:
+                    LoginView()
+                        .environmentObject(authViewModel)
+                }
+            }
         }
     }
 }

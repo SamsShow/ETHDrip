@@ -1,0 +1,460 @@
+---
+alwaysApply: true
+---
+
+# ETHDrip iOS App - Cursor Rules
+
+## Project Overview
+ETHDrip is a **decentralized notification and swag marketplace platform** for ETH hackathon communities built as a native iOS app using Swift/SwiftUI. It runs on **Base Mainnet** and provides:
+- NFC-based attendee verification for authentic swag notifications
+- Real-time, community-driven notifications about sponsor booth swag drops
+- P2P swag marketplace for trading items (Phase 2)
+
+## Tech Stack
+
+### Core Technologies
+- **UI Framework**: SwiftUI + Combine
+- **Language**: Swift 5.5+
+- **Minimum iOS Version**: iOS 15.0+
+- **Networking**: URLSession / Alamofire
+- **Web3 Integration**: Web3.swift or viem via WalletConnect RPC
+- **Wallet Connection**: WalletConnect v2 / Web3Modal iOS SDK
+- **NFC**: CoreNFC (NFCNDEFReaderSession)
+- **IPFS**: Pinata HTTP API
+- **State Management**: ObservableObject / Combine
+- **GraphQL Client**: Apollo iOS
+- **Local Storage**: UserDefaults / CoreData
+- **Push Notifications**: Apple Push Notification Service (APNs) - Phase 3
+- **Analytics**: Firebase Analytics / Mixpanel
+- **Error Tracking**: Sentry
+
+### Blockchain Layer
+- **Network**: Base Mainnet (testnet: Base Sepolia)
+- **Smart Contracts**: Solidity (EVM-compatible)
+  - ETHDripCore.sol (Events + NFC Verification)
+  - NotificationRegistry.sol (Swag Notifications)
+  - ETHDripMarketplace.sol (P2P Trading - Phase 2)
+- **Off-chain Storage**: IPFS (Pinata / Web3.Storage)
+- **Indexing**: The Graph / Goldsky + Redis
+
+## Architecture Principles
+
+### Navigation Structure
+```
+AppEntryView
+ ├─ EventListView
+ │   └─ EventDetailView
+ │        ├─ BoothListView
+ │        │     └─ BoothNotificationFeedView
+ │        └─ LeaderboardView
+ ├─ NFCVerificationView
+ ├─ MarketplaceView (Phase 2)
+ │     ├─ CreateListingView
+ │     └─ ListingDetailView
+ └─ ProfileView
+```
+
+### File Organization
+```
+ETHDrip/
+├── App/
+│   ├── ETHDripApp.swift (main entry)
+│   └── AppDelegate.swift (if needed)
+├── Views/
+│   ├── Events/
+│   ├── Booths/
+│   ├── Notifications/
+│   ├── Leaderboard/
+│   ├── NFC/
+│   ├── Marketplace/ (Phase 2)
+│   └── Profile/
+├── ViewModels/
+│   ├── EventViewModel.swift
+│   ├── NotificationViewModel.swift
+│   ├── NFCViewModel.swift
+│   └── MarketplaceViewModel.swift
+├── Models/
+│   ├── EventModel.swift
+│   ├── BoothModel.swift
+│   ├── NotificationModel.swift
+│   └── MarketplaceModel.swift
+├── Services/
+│   ├── Web3Service.swift
+│   ├── WalletConnectService.swift
+│   ├── NFCService.swift
+│   ├── IPFSService.swift
+│   ├── GraphQLService.swift
+│   └── ContractService.swift
+├── Utilities/
+│   ├── Extensions/
+│   ├── Constants.swift
+│   └── Helpers.swift
+├── Resources/
+│   ├── Assets.xcassets
+│   └── Localizable.strings
+└── Config/
+    ├── ContractAddresses.swift
+    └── NetworkConfig.swift
+```
+
+## Coding Conventions
+
+### Swift Style Guide
+1. **Naming Conventions**:
+   - Use descriptive, camelCase names for variables and functions
+   - Use PascalCase for types (structs, classes, enums)
+   - Prefix protocol names with describing behavior (e.g., `Loadable`, `Refreshable`)
+   - Suffix ViewModels with `ViewModel`
+   - Suffix Services with `Service`
+
+2. **SwiftUI Best Practices**:
+   - Keep views small and composable
+   - Extract complex views into separate components
+   - Use `@StateObject` for view model ownership
+   - Use `@ObservedObject` for passed-in view models
+   - Use `@EnvironmentObject` for app-wide state
+   - Leverage `@Published` properties in view models for reactive updates
+
+3. **Async/Await**:
+   - Use `async/await` for asynchronous operations
+   - Handle errors with `do-catch` blocks
+   - Use `Task` for bridging sync/async contexts
+   - Mark async functions properly
+
+4. **Error Handling**:
+   - Define custom error enums conforming to `Error` protocol
+   - Use `Result` type for complex error scenarios
+   - Always handle blockchain transaction errors gracefully
+   - Show user-friendly error messages
+
+### UI/UX Guidelines
+1. **Design System**:
+   - Use native iOS components and patterns
+   - Follow Apple Human Interface Guidelines
+   - Support both light and dark modes
+   - Ensure proper contrast for accessibility
+   - Use SF Symbols for icons
+
+2. **Component Structure**:
+   - Keep components clean and minimal
+   - Avoid unnecessary wrapper views
+   - Maintain consistent padding and spacing
+   - Use native iOS animations and transitions
+
+3. **Accessibility**:
+   - Add accessibility labels to all interactive elements
+   - Support Dynamic Type
+   - Ensure VoiceOver compatibility
+   - Maintain WCAG AA contrast ratios
+
+## Web3 Integration Patterns
+
+### Wallet Connection Flow
+```swift
+// Example pattern for WalletConnect integration
+class WalletConnectService: ObservableObject {
+    @Published var isConnected: Bool = false
+    @Published var walletAddress: String?
+    
+    func connect() async throws {
+        // WalletConnect v2 connection logic
+    }
+    
+    func disconnect() {
+        // Cleanup logic
+    }
+    
+    func signMessage(_ message: String) async throws -> String {
+        // Signing logic
+    }
+}
+```
+
+### Contract Interaction Pattern
+```swift
+// Example pattern for contract calls
+class ContractService {
+    func verifyNFCTag(
+        uid: String,
+        eventId: String,
+        signature: String
+    ) async throws -> TransactionHash {
+        // Contract call logic
+    }
+    
+    func createSwagNotification(
+        eventId: String,
+        boothId: String,
+        metadata: NotificationMetadata
+    ) async throws -> TransactionHash {
+        // Contract call logic
+    }
+}
+```
+
+### NFC Verification Pattern
+```swift
+// Example NFC integration pattern
+class NFCService: NSObject, ObservableObject {
+    @Published var tagUID: String?
+    @Published var isReading: Bool = false
+    
+    func startReading() {
+        // CoreNFC reading session
+    }
+    
+    func generateProof(uid: String, userAddress: String, eventId: String) -> String {
+        // Generate keccak256(UID + userAddress + eventId + timestamp)
+    }
+}
+```
+
+### IPFS Upload Pattern
+```swift
+// Example IPFS integration pattern
+class IPFSService {
+    func uploadMetadata(_ metadata: [String: Any]) async throws -> String {
+        // Pinata API call
+        // Return IPFS hash (CID)
+    }
+    
+    func fetchMetadata(cid: String) async throws -> [String: Any] {
+        // Fetch from IPFS gateway
+    }
+}
+```
+
+## Security Guidelines
+
+1. **Wallet Security**:
+   - Store WalletConnect session data in iOS Keychain
+   - Never store private keys in the app
+   - Validate all signature operations
+   - Implement session timeout and re-authentication
+
+2. **NFC Security**:
+   - Rate-limit NFC read attempts
+   - Validate tag UIDs server-side
+   - Implement anti-replay mechanisms
+   - Hash sensitive data before on-chain storage
+
+3. **Network Security**:
+   - Use HTTPS for all API calls
+   - Implement SSL pinning for critical endpoints
+   - Validate IPFS CIDs before rendering content
+   - Sanitize all user inputs
+
+4. **Data Privacy**:
+   - Request minimal permissions
+   - Follow Apple's App Tracking Transparency guidelines
+   - Implement proper data retention policies
+   - Allow users to delete their data
+
+## Smart Contract Interaction
+
+### Key Contracts on Base Mainnet
+
+1. **ETHDripCore**:
+   - `createEvent()`: Create hackathon events
+   - `registerBooth()`: Register sponsor booths
+   - `verifyNFCTag()`: Link NFC wristband to wallet
+   - `isVerified()`: Check user verification status
+
+2. **NotificationRegistry**:
+   - `notifySwag()`: Post swag availability notification
+   - `getNotifications()`: Query notifications by event/booth
+   - `getLeaderboard()`: Get top contributors
+   - `getUserStats()`: Get user notification stats
+
+3. **ETHDripMarketplace** (Phase 2):
+   - `createListing()`: List swag item for trade
+   - `buyItem()`: Purchase listed item
+   - `cancelListing()`: Cancel own listing
+
+### Gas Optimization
+- Batch multiple operations when possible
+- Use events for off-chain indexing
+- Minimize storage writes
+- Leverage The Graph for complex queries
+
+## Development Workflow
+
+### Phase 1 (Current): MVP - Months 1-2
+- [x] SwiftUI app structure
+- [ ] NFC proof of concept
+- [ ] WalletConnect integration
+- [ ] Event and booth browsing
+- [ ] Swag notification posting
+- [ ] Leaderboard view
+- [ ] Base Sepolia testnet integration
+
+### Phase 2: Marketplace - Months 3-4
+- [ ] Marketplace UI implementation
+- [ ] Listing creation flow
+- [ ] Escrow contract integration
+- [ ] Trade execution
+- [ ] Subgraph indexing
+
+### Phase 3: Enhancements - Months 5-6
+- [ ] Apple Push Notifications (APNs)
+- [ ] Partnership integrations
+- [ ] iPad optimization
+- [ ] Advanced analytics
+
+## Testing Strategy
+
+1. **Unit Tests**:
+   - Test ViewModels with mock services
+   - Test service layer independently
+   - Test utility functions and extensions
+
+2. **Integration Tests**:
+   - Test contract interactions on testnet
+   - Test IPFS upload/download flows
+   - Test NFC reading simulation
+
+3. **UI Tests**:
+   - Test critical user flows
+   - Test navigation patterns
+   - Test wallet connection flows
+
+## Environment Configuration
+
+### Network Configurations
+```swift
+enum NetworkEnvironment {
+    case baseSepolia  // Testnet
+    case baseMainnet  // Production
+    
+    var rpcURL: String { /* ... */ }
+    var chainId: Int { /* ... */ }
+    var explorerURL: String { /* ... */ }
+}
+```
+
+### Contract Addresses
+- Store contract addresses in `ContractAddresses.swift`
+- Use environment-specific addresses
+- Version control via git
+
+## Performance Optimization
+
+1. **UI Performance**:
+   - Use `LazyVStack` / `LazyHStack` for long lists
+   - Implement pagination for notifications
+   - Cache images with AsyncImage or SDWebImage
+   - Avoid heavy computations in view body
+
+2. **Network Performance**:
+   - Cache GraphQL queries locally
+   - Implement offline mode for viewed content
+   - Use compression for IPFS uploads
+   - Batch contract reads
+
+3. **Battery Optimization**:
+   - Minimize background activity
+   - Efficient use of CoreNFC (only when needed)
+   - Optimize polling intervals
+   - Use push notifications instead of polling
+
+## Analytics & Monitoring
+
+### Key Metrics to Track
+- Daily/Monthly Active Users
+- Wallet connection success rate
+- NFC verification success rate
+- Notifications posted per event
+- Marketplace transaction volume (Phase 2)
+- App crashes and errors
+
+### Events to Log
+- User onboarding completion
+- Wallet connection
+- NFC verification attempts
+- Notification posts
+- Marketplace listings/trades
+- Error occurrences
+
+## Deployment
+
+### App Store Requirements
+- **Bundle ID**: Define unique bundle identifier
+- **Version**: Follow semantic versioning (e.g., 1.0.0)
+- **Privacy Policy**: Required for wallet and NFC data
+- **App Review Notes**: Explain Web3 and NFC features
+- **TestFlight**: Use for beta testing
+
+### CI/CD
+- Automated builds on push to main
+- Run tests before deployment
+- Automated TestFlight uploads
+- Version bumping automation
+
+## Common Patterns & Best Practices
+
+### ViewModel Pattern
+```swift
+@MainActor
+class EventViewModel: ObservableObject {
+    @Published var events: [Event] = []
+    @Published var isLoading: Bool = false
+    @Published var error: Error?
+    
+    private let contractService: ContractService
+    
+    init(contractService: ContractService) {
+        self.contractService = contractService
+    }
+    
+    func loadEvents() async {
+        isLoading = true
+        defer { isLoading = false }
+        
+        do {
+            events = try await contractService.getEvents()
+        } catch {
+            self.error = error
+        }
+    }
+}
+```
+
+### Service Layer Pattern
+```swift
+protocol EventServiceProtocol {
+    func getEvents() async throws -> [Event]
+    func createEvent(_ event: Event) async throws -> TransactionHash
+}
+
+class EventService: EventServiceProtocol {
+    // Implementation
+}
+```
+
+## Important Reminders
+
+1. **Never run dev/build/server commands** unless explicitly instructed
+2. **Avoid creating unnecessary .md files** unless requested
+3. **Support both light and dark modes** for all UI
+4. **Test on physical device** for NFC functionality
+5. **Use Base Sepolia** for all testing before mainnet
+6. **Follow Apple's review guidelines** for Web3 apps
+7. **Implement proper error handling** for blockchain operations
+8. **Cache aggressively** to reduce RPC calls
+9. **Validate all IPFS content** before displaying
+10. **Keep the app offline-capable** where possible
+
+## Resources & Documentation
+
+- WalletConnect v2 iOS: https://docs.walletconnect.com/2.0/swift/
+- CoreNFC: https://developer.apple.com/documentation/corenfc
+- Base Network: https://docs.base.org/
+- The Graph: https://thegraph.com/docs/
+- Pinata IPFS: https://docs.pinata.cloud/
+- SwiftUI: https://developer.apple.com/documentation/swiftui
+
+---
+
+**Last Updated**: September 30, 2025  
+**Project Phase**: Phase 1 (MVP Development)  
+**Target Release**: TestFlight Beta Q4 2025
