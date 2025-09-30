@@ -277,3 +277,4 @@ struct LeaderboardEmptyState: View {
     .padding()
     .background(AppColors.background)
 }
+

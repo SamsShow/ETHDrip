@@ -111,3 +111,4 @@ enum LeaderboardFilter: String, CaseIterable {
     case global = "Global"
     case event = "This Event"
 }
+

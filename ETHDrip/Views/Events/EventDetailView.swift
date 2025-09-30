@@ -78,8 +78,6 @@ struct EventDetailView: View {
                         StatItem(icon: "bell.badge.fill", value: "\(event.totalNotifications)", label: "Notifications")
                     }
                     
-                    Divider()
-                    
                     // Action Buttons
                     if event.isOngoing || event.isUpcoming {
                         VStack(spacing: AppSpacing.medium) {
@@ -111,14 +109,6 @@ struct EventDetailView: View {
                                 HStack {
                                     Image(systemName: "bell.fill")
                                     Text("View Notifications")
-                                }
-                            }
-                            .secondaryButtonStyle()
-                            
-                            NavigationLink(destination: LeaderboardView(eventId: event.id)) {
-                                HStack {
-                                    Image(systemName: "trophy.fill")
-                                    Text("View Leaderboard")
                                 }
                             }
                             .secondaryButtonStyle()

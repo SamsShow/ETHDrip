@@ -194,3 +194,4 @@ struct StandaloneLeaderboardView: View {
         LeaderboardView(eventId: nil)
     }
 }
+
