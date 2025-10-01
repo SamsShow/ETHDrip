@@ -161,11 +161,11 @@ struct ProfileView: View {
     // MARK: - Actions Section
     private var actionsSection: some View {
         VStack(spacing: AppSpacing.medium) {
-            NavigationLink(destination: Text("Settings")) {
+            NavigationLink(destination: SettingsView()) {
                 SettingsRow(icon: "gearshape.fill", title: "Settings", color: AppColors.primaryPurple)
             }
             
-            NavigationLink(destination: Text("Help & Support")) {
+            NavigationLink(destination: HelpView()) {
                 SettingsRow(icon: "questionmark.circle.fill", title: "Help & Support", color: .blue)
             }
             

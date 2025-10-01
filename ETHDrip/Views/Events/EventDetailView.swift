@@ -82,34 +82,34 @@ struct EventDetailView: View {
                     if event.isOngoing || event.isUpcoming {
                         VStack(spacing: AppSpacing.medium) {
                             if event.isOngoing {
-                                Button {
-                                    // Navigate to NFC verification
-                                } label: {
+                                NavigationLink(destination: NFCView()) {
                                     HStack {
                                         Image(systemName: "wave.3.right")
                                         Text("Verify with NFC")
                                     }
+                                    .frame(maxWidth: .infinity)
+                                    .frame(height: 56)
                                 }
                                 .primaryButtonStyle()
                             }
                             
-                            Button {
-                                // Navigate to booths
-                            } label: {
+                            NavigationLink(destination: BoothListView(event: event)) {
                                 HStack {
                                     Image(systemName: "building.2")
                                     Text("View Booths")
                                 }
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 56)
                             }
                             .secondaryButtonStyle()
                             
-                            Button {
-                                // Navigate to notifications
-                            } label: {
+                            NavigationLink(destination: NotificationFeedView(eventId: event.id)) {
                                 HStack {
                                     Image(systemName: "bell.fill")
                                     Text("View Notifications")
                                 }
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 56)
                             }
                             .secondaryButtonStyle()
                         }

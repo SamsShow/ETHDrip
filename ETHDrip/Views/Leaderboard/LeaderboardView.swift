@@ -180,15 +180,6 @@ struct LeaderboardView: View {
     }
 }
 
-// MARK: - Standalone Leaderboard (For Tab View)
-struct StandaloneLeaderboardView: View {
-    var body: some View {
-        NavigationView {
-            LeaderboardView(eventId: nil)
-        }
-    }
-}
-
 #Preview {
     NavigationView {
         LeaderboardView(eventId: nil)
